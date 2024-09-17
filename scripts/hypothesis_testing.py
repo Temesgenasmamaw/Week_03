@@ -61,6 +61,22 @@ class ABHypothesisTesting:
         p_value = 2 * (1 - stats.norm.cdf(abs(z_stat)))
         return z_stat, p_value
 
+    def perform_ab_test(self, feature, group_a_value, group_b_value, metric, large_sample_threshold=30):
+        """
+        Perform an A/B test comparing two groups based on the feature and metric.
+        """
+        group_a = self._segment_data(feature, value=group_a_value)
+        group_b = self._segment_data(feature, value=group_b_value)
+
+        if group_a.empty or group_b.empty:
+            return f"One of the groups is empty. A/B test cannot be performed on {group_a_value} and {group_b_value}."
+
+        if len(group_a) > large_sample_threshold and len(group_b) > large_sample_threshold:
+            z_stat, p_value = self._z_test(group_a, group_b, metric)
+            return f"Z-test on {metric}: Z-statistic = {z_stat}, p-value = {p_value}\n" + self._interpret_p_value(p_value)
+        else:
+            t_stat, p_value = self._t_test(group_a, group_b, metric)
+            return f"T-test on {metric}: T-statistic = {t_stat}, p-value = {p_value}\n" + self._interpret_p_value(p_value)
     def _interpret_p_value(self, p_value, alpha=0.05):
         """
         Interpret the null hypothesis based on the p-value.
