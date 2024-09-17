@@ -9,7 +9,29 @@ def load_and_clean_data(filepath):
     # Removing duplicates
     data = data.drop_duplicates(keep="first")
     return data
+def drop_columns(df,columns_to_drop):
+    data = df.drop(columns=columns_to_drop)
+    return data
+def column_detail(df,categorical_columns):
+    summary_df = pd.DataFrame({
+    'Column': categorical_columns,
+    'DataType': [df[col].dtype for col in categorical_columns],
+    'NumUniqueValues': [df[col].nunique() for col in categorical_columns]
+     })
+    return summary_df
+def distribution(df):
+    print(f'Gender Distribution:\n{df.Gender.value_counts()}')
+    print(f'Title Distribution:\n {df.Title.value_counts()}')
+    print(f'Marital Status Distribution:\n {df.MaritalStatus.value_counts()}')
 
+def title_to_gender_map(df,title_to_gender_map):
+    
+    # Fill missing Gender based on Title
+    df['Gender'] = df.apply(lambda row: title_to_gender_map.get(row['Title'], row['Gender']), axis=1)
+
+    # Display the updated Gender counts
+    print(df['Gender'].value_counts())
+   
 def encoder(method, dataframe, columns_label, columns_onehot):
     if method == 'labelEncoder':      
         df_lbl = dataframe.copy()
